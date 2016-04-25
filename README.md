@@ -9,8 +9,11 @@ Require the library by running:
 composer require gilbitron/spark-create-stripe-plans
 ```
 
-Next you need to add `Gilbitron\Laravel\Spark\CreateStripePlansServiceProvider::class` to your
-`providers` array in `config/app.php`.
+Next you need to add the following to your `providers` array in `config/app.php`:
+
+```
+Gilbitron\Laravel\Spark\CreateStripePlansServiceProvider::class
+```
 
 ## Usage
 
