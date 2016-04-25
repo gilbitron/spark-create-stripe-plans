@@ -1,0 +1,21 @@
+{
+    "name": "gilbitron/spark-create-stripe-plans",
+    "description": "A simple Laravel artisan command to create Spark plans in Stripe",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Gilbert Pellegrom",
+            "email": "gilbert@pellegrom.me"
+        }
+    ],
+    "require": {
+        "laravel/framework": "5.*",
+        "stripe/stripe-php": "3.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Gilbitron\\Laravel\\Spark": "src/"
+        }
+    }
+}
