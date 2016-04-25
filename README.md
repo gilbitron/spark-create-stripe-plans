@@ -1,5 +1,5 @@
 # Spark Create Stripe Plans
-A simple Laravel artisan command to create Spark plans in Stripe.
+A simple Laravel artisan command to create [Spark](https://spark.laravel.com) plans in Stripe.
 
 ## Install
 
