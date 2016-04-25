@@ -15,7 +15,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Gilbitron\\Laravel\\Spark": "src/"
+            "Gilbitron\\Laravel\\Spark\\": "src/"
         }
     }
 }
