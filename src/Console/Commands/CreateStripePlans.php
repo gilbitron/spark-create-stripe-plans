@@ -41,10 +41,25 @@ class CreateStripePlans extends Command
     {
         Stripe\Stripe::setApiKey(config('services.stripe.secret'));
 
-        $plans = Spark::$teamPlans;
+        $this->info('Creating user plans...');
+        $this->createStripePlans(Spark::$plans);
+
+        $this->info('Creating team plans...');
+        $this->createStripePlans(Spark::$teamPlans);
+
+        $this->info('Finished');
+    }
+
+    /**
+     * Try and create plans in Stripe
+     *
+     * @param array $plans
+     */
+    protected function createStripePlans($plans)
+    {
         foreach ($plans as $plan) {
             if ($this->planExists($plan)) {
-                $this->info('Stripe plan ' . $plan->id . ' already exists');
+                $this->line('Stripe plan ' . $plan->id . ' already exists');
             } else {
                 Stripe\Plan::create([
                     'id'                   => $plan->id,
@@ -60,8 +75,6 @@ class CreateStripePlans extends Command
                 $this->info('Stripe plan created: ' . $plan->id);
             }
         }
-
-        $this->info('Finished');
     }
 
     /**
