@@ -2,9 +2,10 @@
 
 namespace Gilbitron\Laravel\Spark\Console\Commands;
 
-use Stripe;
 use Illuminate\Console\Command;
+use Laravel\Cashier\Cashier;
 use Laravel\Spark\Spark;
+use Stripe;
 
 class CreateStripePlans extends Command
 {
@@ -62,14 +63,15 @@ class CreateStripePlans extends Command
                 $this->line('Stripe plan ' . $plan->id . ' already exists');
             } else {
                 Stripe\Plan::create([
-                    'id'                   => $plan->id,
-                    'name'                 => Spark::$details['product'] . ' ' . $plan->name . ' ($' . $plan->price .
-                                              ' ' . $plan->interval . ')',
-                    'amount'               => $plan->price * 100,
-                    'interval'             => str_replace('ly', '', $plan->interval),
-                    'currency'             => 'usd',
-                    'statement_descriptor' => Spark::$details['vendor'],
-                    'trial_period_days'    => $plan->trialDays,
+                   'id'                   => $plan->id,
+                   'name'                 => Spark::$details['product'] . ' ' . $plan->name . ' (' .
+                                             Cashier::usesCurrencySymbol() . $plan->price . ' ' . $plan->interval .
+                                             ')',
+                   'amount'               => $plan->price * 100,
+                   'interval'             => str_replace('ly', '', $plan->interval),
+                   'currency'             => Cashier::usesCurrency(),
+                   'statement_descriptor' => Spark::$details['vendor'],
+                   'trial_period_days'    => $plan->trialDays,
                 ]);
 
                 $this->info('Stripe plan created: ' . $plan->id);
