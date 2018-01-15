@@ -28,7 +28,6 @@ re-run the command it will not overwrite existing plans.
 
 ## Credits
 
-Spark Create Stripe Plans was created by [Gilbert Pellegrom](https://gilbert.pellegrom.me) from
-[Dev7studios](https://dev7studios.co). Released under the MIT license.
+Spark Create Stripe Plans was created by [Gilbert Pellegrom](https://gilbitron.me) from [Dev7studios](https://dev7studios.co). Released under the MIT license.
 
 
