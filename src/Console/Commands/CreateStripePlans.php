@@ -63,15 +63,20 @@ class CreateStripePlans extends Command
                 $this->line('Stripe plan ' . $plan->id . ' already exists');
             } else {
                 Stripe\Plan::create([
-                   'id'                   => $plan->id,
-                   'name'                 => Spark::$details['product'] . ' ' . $plan->name . ' (' .
-                                             Cashier::usesCurrencySymbol() . $plan->price . ' ' . $plan->interval .
-                                             ')',
-                   'amount'               => $plan->price * 100,
-                   'interval'             => str_replace('ly', '', $plan->interval),
-                   'currency'             => Cashier::usesCurrency(),
-                   'statement_descriptor' => Spark::$details['vendor'],
-                   'trial_period_days'    => $plan->trialDays,
+                    'id'                   => $plan->id,
+                    'product'              => [
+                        'name'                 => Spark::$details['product'] . ' ' . $plan->name . ' (' .
+                            config('cashier.currency') . $plan->price . ' ' . $plan->interval .
+                            ')',
+                        'statement_descriptor' => Spark::$details['vendor'],
+                        'unit_label' => 'JobAds',
+                    ],
+                    'amount'               => $plan->price * 100,
+                    'interval'             => str_replace('ly', '', $plan->interval),
+                    'currency'             => config('cashier.currency'),
+                    'trial_period_days'    => $plan->trialDays,
+                    'billing_scheme'       => 'per_unit',
+                    'usage_type'           => Spark::noProrate() ? 'licensed' : 'metered',
                 ]);
 
                 $this->info('Stripe plan created: ' . $plan->id);
