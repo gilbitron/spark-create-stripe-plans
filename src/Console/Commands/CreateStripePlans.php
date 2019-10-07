@@ -64,10 +64,9 @@ class CreateStripePlans extends Command
             } else {
                 Stripe\Plan::create([
                     'id'                   => $plan->id,
+                    'nickname'             => $plan->name,
                     'product'              => [
-                        'name'                 => Spark::$details['product'] . ' ' . $plan->name . ' (' .
-                            config('cashier.currency') . $plan->price . ' ' . $plan->interval .
-                            ')',
+                        'name'                 => Spark::$details['product'] . ' ' . $plan->name,
                         'statement_descriptor' => Spark::$details['vendor'],
                         'unit_label' => 'JobAds',
                     ],
