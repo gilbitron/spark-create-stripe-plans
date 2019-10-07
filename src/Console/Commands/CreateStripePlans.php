@@ -42,6 +42,9 @@ class CreateStripePlans extends Command
     {
         Stripe\Stripe::setApiKey(config('services.stripe.secret'));
 
+        $this->info('Creating product ...');
+        $this->createProduct();
+
         $this->info('Creating user plans...');
         $this->createStripePlans(Spark::$plans);
 
@@ -51,6 +54,38 @@ class CreateStripePlans extends Command
         $this->info('Finished');
     }
 
+    protected function getProductId()
+    {
+        return Spark::$details['product_id']
+            ?? strtolower(str_replace(' ', '-', Spark::$details['product']));
+    }
+
+    /**
+     * Try and create product in Stripe
+     *
+     * @param array $plans
+     */
+    protected function createProduct()
+    {
+        $id = $this->getProductId();
+
+        try {
+            Stripe\Product::retrieve($id);
+
+            $this->line('Stripe product ' . $id . ' already exists');
+        } catch (\Exception $e) {
+            Stripe\Product::create([
+                'id'                   => $id,
+                'name'                 => Spark::$details['product'],
+                'statement_descriptor' => Spark::$details['vendor'],
+                'unit_label'           => 'JobAds',
+                'type'                 => 'service',
+            ]);
+
+            $this->info('Stripe product created: ' . $id);
+        }
+
+    }
     /**
      * Try and create plans in Stripe
      *
@@ -65,11 +100,7 @@ class CreateStripePlans extends Command
                 Stripe\Plan::create([
                     'id'                   => $plan->id,
                     'nickname'             => $plan->name,
-                    'product'              => [
-                        'name'                 => Spark::$details['product'] . ' ' . $plan->name,
-                        'statement_descriptor' => Spark::$details['vendor'],
-                        'unit_label' => 'JobAds',
-                    ],
+                    'product'              => $this->getProductId(),
                     'amount'               => $plan->price * 100,
                     'interval'             => str_replace('ly', '', $plan->interval),
                     'currency'             => config('cashier.currency'),
