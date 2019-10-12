@@ -94,6 +94,11 @@ class CreateStripePlans extends Command
     protected function createStripePlans($plans)
     {
         foreach ($plans as $plan) {
+            if ($plan->id === 'free') {
+                $this->line('Skipping free plan, since the "free" plan is handled by Spark internally.');
+                continue;
+            }
+
             if ($this->planExists($plan)) {
                 $this->line('Stripe plan ' . $plan->id . ' already exists');
             } else {
