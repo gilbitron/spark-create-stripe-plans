@@ -56,7 +56,7 @@ class CreateStripePlans extends Command
 
     protected function getProductId()
     {
-        return Spark::$details['product_id']
+        return Spark::$details['stripe_product_id']
             ?? strtolower(str_replace(' ', '-', Spark::$details['product']));
     }
 
