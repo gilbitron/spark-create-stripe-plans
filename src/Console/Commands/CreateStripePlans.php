@@ -70,10 +70,6 @@ class CreateStripePlans extends Command
         $id = $this->getProductId();
 
         try {
-            Stripe\Product::retrieve($id);
-
-            $this->line('Stripe product ' . $id . ' already exists');
-        } catch (\Exception $e) {
             Stripe\Product::create([
                 'id'                   => $id,
                 'name'                 => Spark::$details['product'],
@@ -83,6 +79,8 @@ class CreateStripePlans extends Command
             ]);
 
             $this->info('Stripe product created: ' . $id);
+        } catch (\Stripe\Error\InvalidRequest $e) {
+            $this->line('Stripe product ' . $id . ' already exists');
         }
 
     }
@@ -99,9 +97,7 @@ class CreateStripePlans extends Command
                 continue;
             }
 
-            if ($this->planExists($plan)) {
-                $this->line('Stripe plan ' . $plan->id . ' already exists');
-            } else {
+            try {
                 Stripe\Plan::create([
                     'id'                   => $plan->id,
                     'nickname'             => $plan->name,
@@ -115,24 +111,9 @@ class CreateStripePlans extends Command
                 ]);
 
                 $this->info('Stripe plan created: ' . $plan->id);
+            } catch (\Stripe\Error\InvalidRequest $e) {
+                $this->line('Stripe plan ' . $plan->id . ' already exists');
             }
         }
-    }
-
-    /**
-     * Check if a plan already exists
-     *
-     * @param $plan
-     * @return bool
-     */
-    private function planExists($plan)
-    {
-        try {
-            Stripe\Plan::retrieve($plan->id);
-            return true;
-        } catch (\Exception $e) {
-        }
-
-        return false;
     }
 }

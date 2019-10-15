@@ -43,7 +43,12 @@ class CreateStripeEndpoints extends Command
         Stripe\Stripe::setApiKey(config('services.stripe.secret'));
 
         $this->info('Creating endpoints ...');
-        $this->createEndpoints();
+
+        try {
+            $this->createEndpoints();
+        } catch (\Stripe\Error\InvalidRequest $e) {
+            $this->error($e->getMessage());
+        }
 
         $this->info('Finished');
     }
