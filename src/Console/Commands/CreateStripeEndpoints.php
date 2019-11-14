@@ -46,7 +46,7 @@ class CreateStripeEndpoints extends Command
 
         try {
             $this->createEndpoints();
-        } catch (\Stripe\Error\InvalidRequest $e) {
+        } catch (\Stripe\Error\InvalidRequest | \Stripe\Exception\InvalidRequest $e) {
             $this->error($e->getMessage());
         }
 
@@ -60,7 +60,7 @@ class CreateStripeEndpoints extends Command
      */
     protected function createEndpoints()
     {
-        $endpoint = \Stripe\WebhookEndpoint::create([
+        \Stripe\WebhookEndpoint::create([
             'url' => config('app.url').'/webhook/stripe',
             'enabled_events' => [
                 'customer.subscription.updated',

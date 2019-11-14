@@ -79,7 +79,7 @@ class CreateStripePlans extends Command
             ]);
 
             $this->info('Stripe product created: ' . $id);
-        } catch (\Stripe\Error\InvalidRequest $e) {
+        } catch (\Stripe\Error\InvalidRequest | \Stripe\Exception\InvalidRequest $e) {
             $this->line('Stripe product ' . $id . ' already exists');
         }
 
@@ -111,7 +111,7 @@ class CreateStripePlans extends Command
                 ]);
 
                 $this->info('Stripe plan created: ' . $plan->id);
-            } catch (\Stripe\Error\InvalidRequest $e) {
+            } catch (\Stripe\Error\InvalidRequest | \Stripe\Exception\InvalidRequest $e) {
                 $this->line('Stripe plan ' . $plan->id . ' already exists');
             }
         }
