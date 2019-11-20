@@ -24,6 +24,12 @@ class CreateStripePlans extends Command
     protected $description = 'Creates plans in Stripe based on the plans defined in Spark';
 
     /**
+     * Product Stripe IDs
+     *
+     * @var array
+     */
+    private $productStripeIds = [];
+    /**
      * Create a new command instance.
      *
      * @return void
@@ -42,8 +48,8 @@ class CreateStripePlans extends Command
     {
         Stripe\Stripe::setApiKey(config('services.stripe.secret'));
 
-        $this->info('Creating product ...');
-        $this->createProduct();
+        $this->info('Fetch products...');
+        $this->fetchProducts();
 
         $this->info('Creating user plans...');
         $this->createStripePlans(Spark::$plans);
@@ -54,36 +60,65 @@ class CreateStripePlans extends Command
         $this->info('Finished');
     }
 
-    protected function getProductId()
-    {
-        return Spark::$details['stripe_product_id']
-            ?? strtolower(str_replace(' ', '-', Spark::$details['product']));
-    }
-
     /**
      * Try and create product in Stripe
      *
      * @param array $plans
      */
-    protected function createProduct()
+    protected function fetchProducts()
     {
-        $id = $this->getProductId();
+        try {
+            /** @var \Stripe\Product[] $products */
+            $products = Stripe\Product::all();
+            foreach ($products as $product) {
+                $this->productStripeIds[] = $product->id;
+            }
+
+            $this->info('Fetched products');
+        } catch (\Stripe\Error\InvalidRequest | \Stripe\Exception\InvalidRequest $e) {
+            $this->line('Unable to fetch products');
+        }
+
+    }
+
+    /**
+     * Create product in Stripe if needed and return the id
+     *
+     * @param array $plans
+     */
+    protected function getProductId($name = null)
+    {
+        $name = $name ?? Spark::$details['product'];
+
+        $id = strtolower(str_replace(' ', '-', $name));
+
+        $this->info('Creating looking up id for: '.$id);
+
+        if (in_array($id, $this->productStripeIds)) {
+            return $id;
+        }
+
+        $this->info('Creating product: '.$id);
 
         try {
-            Stripe\Product::create([
+            $product = Stripe\Product::create([
                 'id'                   => $id,
-                'name'                 => Spark::$details['product'],
+                'name'                 => $name,
                 'statement_descriptor' => Spark::$details['vendor'],
                 'unit_label'           => Spark::$details['unit_label'] ?? null,
                 'type'                 => 'service',
             ]);
+
+            $this->productStripeIds[] = $product->id;
 
             $this->info('Stripe product created: ' . $id);
         } catch (\Stripe\Error\InvalidRequest | \Stripe\Exception\InvalidRequest $e) {
             $this->line('Stripe product ' . $id . ' already exists');
         }
 
+        return $id;
     }
+
     /**
      * Try and create plans in Stripe
      *
@@ -101,7 +136,7 @@ class CreateStripePlans extends Command
                 Stripe\Plan::create([
                     'id'                   => $plan->id,
                     'nickname'             => $plan->name,
-                    'product'              => $this->getProductId(),
+                    'product'              => $this->getProductId($plan->attribute('product')),
                     'amount'               => $plan->price * 100,
                     'interval'             => str_replace('ly', '', $plan->interval),
                     'currency'             => config('cashier.currency'),
@@ -112,7 +147,7 @@ class CreateStripePlans extends Command
 
                 $this->info('Stripe plan created: ' . $plan->id);
             } catch (\Stripe\Error\InvalidRequest | \Stripe\Exception\InvalidRequest $e) {
-                $this->line('Stripe plan ' . $plan->id . ' already exists');
+                $this->line('Stripe plan ' . $plan->id . ' already exists: '.$e->getMessage());
             }
         }
     }
