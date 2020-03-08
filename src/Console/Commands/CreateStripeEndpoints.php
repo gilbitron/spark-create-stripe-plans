@@ -21,7 +21,7 @@ class CreateStripeEndpoints extends Command
      *
      * @var string
      */
-    protected $description = 'Creates endpoiints in Stripe based on the Spark app';
+    protected $description = 'Removes all current endpoints and creates endpoints in Stripe based on the Spark app';
 
     /**
      * Create a new command instance.
@@ -45,6 +45,7 @@ class CreateStripeEndpoints extends Command
         $this->info('Creating endpoints ...');
 
         try {
+            $this->deleteEndpoints();
             $this->createEndpoints();
         } catch (\Stripe\Error\InvalidRequest | \Stripe\Exception\InvalidRequest $e) {
             $this->error($e->getMessage());
@@ -54,14 +55,31 @@ class CreateStripeEndpoints extends Command
     }
 
     /**
+     * Delete all endpoints in Stripe
+     *
+     * @param array $plans
+     */
+    protected function deleteEndpoints()
+    {
+        $endpoints =\Stripe\WebhookEndpoint::all();
+        foreach ($endpoints as $endpoint) {
+            $this->info('Deleted webhook endpoint:'.$endpoint->url);
+
+            $endpoint->delete();
+        }
+    }
+
+    /**
      * Try and create endpoints in Stripe
      *
      * @param array $plans
      */
     protected function createEndpoints()
     {
+        $url = config('app.url').'webhook/stripe';
+
         \Stripe\WebhookEndpoint::create([
-            'url' => config('app.url').'/webhook/stripe',
+            'url' => $url,
             'enabled_events' => [
                 'customer.subscription.updated',
                 'customer.subscription.deleted',
@@ -69,7 +87,10 @@ class CreateStripeEndpoints extends Command
                 'customer.deleted',
                 'invoice.payment_action_required',
                 'invoice.payment_succeeded',
+                'invoice.created',
             ]
         ]);
+
+        $this->info('Created webhook endpoint:'.$url);
     }
 }
