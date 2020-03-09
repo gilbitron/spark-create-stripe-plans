@@ -8,6 +8,7 @@ class CreateStripePlansServiceProvider extends ServiceProvider
 {
     protected $commands = [
         \Gilbitron\Laravel\Spark\Console\Commands\CreateStripePlans::class,
+        \Gilbitron\Laravel\Spark\Console\Commands\CreateStripeEndpoints::class,
     ];
 
     /**
