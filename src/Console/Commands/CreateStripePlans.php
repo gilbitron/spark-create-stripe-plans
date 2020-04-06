@@ -64,9 +64,11 @@ class CreateStripePlans extends Command
             } else {
                 Stripe\Plan::create([
                    'id'                   => $plan->id,
-                   'name'                 => Spark::$details['product'] . ' ' . $plan->name . ' (' .
-                                             Cashier::usesCurrencySymbol() . $plan->price . ' ' . $plan->interval .
-                                             ')',
+                    'product'           => [
+                        'name'                 => Spark::$details['product'] . ' ' . $plan->name . ' (' .
+                            Cashier::usesCurrencySymbol() . $plan->price . ' ' . $plan->interval .
+                            ')',
+                        'statement_descriptor' => Spark::$details['vendor']],
                    'amount'               => $plan->price * 100,
                    'interval'             => str_replace('ly', '', $plan->interval),
                    'currency'             => Cashier::usesCurrency(),
